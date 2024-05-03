@@ -31,6 +31,10 @@ func init() {
 	}
 }
 
+// @title 博客系统
+// @version 1.0
+// @description Go 语言编程之旅：一起用 Go 做项目
+// @termsOfService https://github.com/justary/gin-blog
 func main() {
 	global.Logger.Info("%s: gogogo/%s", "abc", "blog")
 	gin.SetMode(global.ServerSetting.RunMode)

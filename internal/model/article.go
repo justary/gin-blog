@@ -1,5 +1,7 @@
 package model
 
+import "github.com/justary/gin-blog/pkg/app"
+
 type Article struct {
 	*Common
 	Title         string `json:"title"`
@@ -11,4 +13,9 @@ type Article struct {
 
 func (a Article) TableName() string {
 	return "blog_article"
+}
+
+type ArticleSwagger struct {
+	List  []*Article
+	Pager *app.Pager
 }
