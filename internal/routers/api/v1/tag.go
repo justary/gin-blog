@@ -2,6 +2,7 @@ package v1
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/justary/gin-blog/internal/service"
 	"github.com/justary/gin-blog/pkg/app"
 	"github.com/justary/gin-blog/pkg/errcode"
 )
@@ -56,21 +57,34 @@ func (t Tag) Delete(c *gin.Context) {}
 // @Failure 500 {object} errcode.Error "内部错误"
 // @Router /api/v1/tags [get]
 func (t Tag) List(c *gin.Context) {
-
-	param := struct {
-		Name  string `form:"name" binding:"max=100"`
-		State uint8  `form:"state,default=1" binding:"oneof=0 1"`
-	}{}
-
+	param := service.TagListRequest{}
 	response := app.NewResponse(c)
 	valid, errs := app.BindValid(c, &param)
 	if !valid {
-		//global.Logger.Fatalf("app.bindandvalid errs : %v",errs)
+		//global.Logger.Errorf("app.BindAndValid errs: %v",errs)
 		response.ToErrorResponse(errcode.InvalidParams.WithDetails(errs.Errors()...))
 		return
 	}
-	response.ToResponse(gin.H{})
+
+	svc := service.New(c.Request.Context())
+	pager := app.Pager{
+		Page:     app.GetPage(c),
+		PageSize: app.GetPageSize(c),
+	}
+	totalRows, err := svc.CountTag(&service.CountTagRequest{Name: param.Name, State: param.State})
+	if err != nil {
+		response.ToErrorResponse(errcode.ErrorCountTagFail)
+		return
+	}
+	tags, err := svc.GetTagList(&param, &pager)
+	if err != nil {
+		response.ToErrorResponse(errcode.ErrorGetTagListFail)
+		return
+	}
+
+	response.ToResponseList(tags, totalRows)
 	return
+
 }
 
 func (t Tag) Get(c *gin.Context) {}
